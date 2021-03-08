@@ -2,13 +2,15 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace eShopSolution.Data.Entities
+namespace eShopSolution.Application.Catalog.Products.Dtos.Manage // cái nào dùng chung thì chúng ta add thêm .Manage vào
 {
-    public class ProductTranslation
+    public class ProductCreateReqest
     {
-        public int Id { set; get; }
+        public decimal Price { set; get; }
 
-        public int ProductId { set; get; }
+        public decimal OriginalPrice { set; get; }
+
+        public int Stock { set; get; }
 
         public string Name { set; get; }
 
@@ -24,8 +26,5 @@ namespace eShopSolution.Data.Entities
 
         public string LanguageId { set; get; }
 
-        public Product Product { get; set; }
-
-        public Language Language { get; set; }
     }
 }
