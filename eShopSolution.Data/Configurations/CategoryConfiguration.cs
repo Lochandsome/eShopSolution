@@ -21,7 +21,7 @@ namespace eShopSolution.Data.Configurations
             // Vd : hasindex, ngoài ra còn có hasone
             // entity.HasIndex(p => p.UserName)     // Đánh chỉ mục UserName (user_name)
             //.IsUnique(true);               // Unique
-
+            builder.Property(x => x.Id).UseIdentityColumn();
             //Để thiết lập thuộc tính (trường, cột) của một Model (bảng) thì đầu tiên phải lấy được đối tượng lớp
             //PropertyBuilder dành cho thuộc tính đó :
 

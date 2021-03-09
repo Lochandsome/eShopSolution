@@ -1,8 +1,9 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace eShopSolution.Application.Catalog.Products.Dtos.Manage // cái nào dùng chung thì chúng ta add thêm .Manage vào
+namespace eShopSolution.ViewModels.Catalog.Products.Manage // cái nào dùng chung thì chúng ta add thêm .Manage vào
 {
     public class ProductCreateReqest
     {
@@ -25,6 +26,8 @@ namespace eShopSolution.Application.Catalog.Products.Dtos.Manage // cái nào d�
         public string SeoAlias { get; set; }
 
         public string LanguageId { set; get; }
+
+        public IFormFile ThumnailImage { get; set; }
 
     }
 }
