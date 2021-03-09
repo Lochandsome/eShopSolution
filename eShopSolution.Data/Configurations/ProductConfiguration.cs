@@ -16,6 +16,7 @@ namespace eShopSolution.Data.Configurations
             // x là cái biến đại diện cho bảng với đối tượng product r chấm .id hay jj đó
             // có thể đặt là x hay s b c t jj đó
             builder.HasKey(x => x.Id);
+            builder.Property(x => x.Id).UseIdentityColumn();
 
             builder.Property(x => x.Price).IsRequired();
 
