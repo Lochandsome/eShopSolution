@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace eShopSolution.ViewModels.Catalog.Products.Manage // cái nào dùng chung thì chúng ta add thêm .Manage vào
+namespace eShopSolution.ViewModels.Catalog.Products // cái nào dùng chung thì chúng ta add thêm .Manage vào
 {
     public class ProductCreateReqest
     {
