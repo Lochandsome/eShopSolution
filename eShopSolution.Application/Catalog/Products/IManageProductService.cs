@@ -11,7 +11,7 @@ namespace eShopSolution.Application.Catalog.Products
     {
         // nếu dùng task<int> thì có thể tận dụng xử lí nhiều reques cùng lúc
         // phần này chỉ có thêm sửa xóa thôi
-        Task<int> Create(ProductCreateReqest reqest);
+        Task<int> Create(ProductCreateRequest reqest);
 
         Task<int> Update(ProductUpdateRequest request);
 

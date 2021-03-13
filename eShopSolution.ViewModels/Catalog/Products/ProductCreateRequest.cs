@@ -5,7 +5,7 @@ using System.Text;
 
 namespace eShopSolution.ViewModels.Catalog.Products // cái nào dùng chung thì chúng ta add thêm .Manage vào
 {
-    public class ProductCreateReqest
+    public class ProductCreateRequest
     {
         public decimal Price { set; get; }
         public decimal OriginalPrice { set; get; }

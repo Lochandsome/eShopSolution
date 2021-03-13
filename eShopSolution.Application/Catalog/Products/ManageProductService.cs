@@ -57,7 +57,7 @@ namespace eShopSolution.Application.Catalog.Products
             await _context.SaveChangesAsync();
         }
 
-        public async Task<int> Create(ProductCreateReqest request)
+        public async Task<int> Create(ProductCreateRequest request)
         {
             var product = new Product()
             {
