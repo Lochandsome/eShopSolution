@@ -1,17 +1,18 @@
-﻿using eShopSolution.Data.EF;
+﻿using eShopSolution.Application.Common;
+using eShopSolution.Data.EF;
 using eShopSolution.Data.Entities;
 using eShopSolution.Utilities.Exceptions;
-using System;
-using System.Linq;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using eShopSolution.ViewModels.Common;
 using eShopSolution.ViewModels.Catalog.Products;
+using eShopSolution.ViewModels.Common;
 using Microsoft.AspNetCore.Http;
-using System.Net.Http.Headers;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
 using System.IO;
-using eShopSolution.Application.Common;
+using System.Linq;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace eShopSolution.Application.Catalog.Products
 {
@@ -26,7 +27,7 @@ namespace eShopSolution.Application.Catalog.Products
             _storageService = storageService;
         }
 
-        public Task<int> AddImage(int productId, List<IFormFile> files)
+        public async Task<int> AddImage(int productId, List<IFormFile> files)
         {
             throw new NotImplementedException();
         }
@@ -62,7 +63,7 @@ namespace eShopSolution.Application.Catalog.Products
                 }
             };
             //save image
-            if(request.ThumnailImage != null)
+            if(request.ThumbnailImage != null)
             {
                 product.ProductImages = new List<ProductImage>()
                 {
@@ -70,8 +71,8 @@ namespace eShopSolution.Application.Catalog.Products
                     {
                         Caption = "Thumbnail Image",
                         DateCreated = DateTime.Now,
-                        FileSize = request.ThumnailImage.Length,
-                        ImagePath = await this.SaveFile(request.ThumnailImage),
+                        FileSize = request.ThumbnailImage.Length,
+                        ImagePath = await this.SaveFile(request.ThumbnailImage),
                         IsDefault = true,
                         SortOrder = 1
                     }
@@ -79,7 +80,8 @@ namespace eShopSolution.Application.Catalog.Products
             }
             _context.Products.Add(product);
             //sau khi tới bc này thì qua IManageProductServide đổi int thành task<int>
-            return await _context.SaveChangesAsync();// thay vì nó phải chời thì nó sẽ nhả task ra để phục vụ request khác, và giảm cái thời gian mà nó phải chờ
+            await _context.SaveChangesAsync();// thay vì nó phải chời thì nó sẽ nhả task ra để phục vụ request khác, và giảm cái thời gian mà nó phải chờ
+            return product.Id;
         }
 
         public async Task<int> Delete(int productId)
@@ -98,29 +100,29 @@ namespace eShopSolution.Application.Catalog.Products
 
         public async Task<PagedResult<ProductViewModel>> GetAllPaging(GetManageProductPagingRequest request)
         {
-            //1. select           
+            //1. Select join
             var query = from p in _context.Products
                         join pt in _context.ProductTranslations on p.Id equals pt.ProductId
                         join pic in _context.ProductInCategories on p.Id equals pic.ProductId
                         join c in _context.Categories on pic.CategoryId equals c.Id
                         select new { p, pt, pic };
-            //2 filter
+            //2. filter
             if (!string.IsNullOrEmpty(request.Keyword))
                 query = query.Where(x => x.pt.Name.Contains(request.Keyword));
 
-            if(request.CategoryIds.Count > 0)
+            if (request.CategoryIds.Count > 0)
             {
                 query = query.Where(p => request.CategoryIds.Contains(p.pic.CategoryId));
             }
-            //3. Paging 
+            //3. Paging
             int totalRow = await query.CountAsync();
 
-            var data = await query.Skip((request.PageIndex - 1)*request.PageSize)
+            var data = await query.Skip((request.PageIndex - 1) * request.PageSize)
                 .Take(request.PageSize)
-                .Select(x=>new ProductViewModel()
+                .Select(x => new ProductViewModel()
                 {
                     Id = x.p.Id,
-                    Name = x.pt.Name, 
+                    Name = x.pt.Name,
                     DateCreated = x.p.DateCreated,
                     Description = x.pt.Description,
                     Details = x.pt.Details,
@@ -134,13 +136,38 @@ namespace eShopSolution.Application.Catalog.Products
                     ViewCount = x.p.ViewCount
                 }).ToListAsync();
 
-            //4 select and project
+            //4. Select and projection
             var pagedResult = new PagedResult<ProductViewModel>()
             {
                 TotalRecord = totalRow,
                 Items = data
             };
             return pagedResult;
+        }
+
+        public async Task<ProductViewModel> GetById(int productId, string languageId)
+        {
+            var product = await _context.Products.FindAsync(productId);
+            var productTranslation = await _context.ProductTranslations.FirstOrDefaultAsync(x => x.ProductId == productId
+            && x.LanguageId == languageId);
+
+            var productViewModel = new ProductViewModel()
+            {
+                Id = product.Id,
+                DateCreated = product.DateCreated,
+                Description = productTranslation != null ? productTranslation.Description : null,
+                LanguageId = productTranslation.LanguageId,
+                Details = productTranslation != null ? productTranslation.Details : null,
+                Name = productTranslation != null ? productTranslation.Name : null,
+                OriginalPrice = product.OriginalPrice,
+                Price = product.Price,
+                SeoAlias = productTranslation != null ? productTranslation.SeoAlias : null,
+                SeoDescription = productTranslation != null ? productTranslation.SeoDescription : null,
+                SeoTitle = productTranslation != null ? productTranslation.SeoTitle : null,
+                Stock = product.Stock,
+                ViewCount = product.ViewCount
+            };
+            return productViewModel;
         }
 
         public Task<List<ProductImageViewModel>> GetListImage(int productId)
@@ -207,12 +234,10 @@ namespace eShopSolution.Application.Catalog.Products
 
         private async Task<string> SaveFile(IFormFile file)
         {
-            var originalFineName = ContentDispositionHeaderValue.Parse(file.ContentDisposition).FileName.Trim('"');
-            var fileName = $"{ Guid.NewGuid()}{ Path.GetExtension(originalFineName)}";
+            var originalFileName = ContentDispositionHeaderValue.Parse(file.ContentDisposition).FileName.Trim('"');
+            var fileName = $"{Guid.NewGuid()}{Path.GetExtension(originalFileName)}";
             await _storageService.SaveFileAsync(file.OpenReadStream(), fileName);
             return fileName;
-
-            
         }
 
     }
