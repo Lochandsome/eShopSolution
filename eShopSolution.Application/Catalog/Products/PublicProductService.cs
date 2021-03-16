@@ -18,7 +18,7 @@ namespace eShopSolution.Application.Catalog.Products
         }
         public async Task<PagedResult<ProductViewModel>> GetAllByCategoryId(string languageId, GetPublicProductPagingRequest request)
         {
-            //1. select           
+            //1. Select join
             var query = from p in _context.Products
                         join pt in _context.ProductTranslations on p.Id equals pt.ProductId
                         join pic in _context.ProductInCategories on p.Id equals pic.ProductId
@@ -26,12 +26,12 @@ namespace eShopSolution.Application.Catalog.Products
                         where pt.LanguageId == languageId
                         select new { p, pt, pic };
             //2 filter
-            
+
             if (request.CategoryId.HasValue && request.CategoryId.Value > 0) //nếu trong CategoryId int? null thì có thể nhận giá trị null nữa
             {
                 query = query.Where(p =>p.pic.CategoryId == request.CategoryId);
             }
-            //3. Paging 
+            //3. Paging
             int totalRow = await query.CountAsync();
 
             var data = await query.Skip((request.PageIndex - 1) * request.PageSize)
@@ -53,7 +53,7 @@ namespace eShopSolution.Application.Catalog.Products
                     ViewCount = x.p.ViewCount
                 }).ToListAsync();
 
-            //4 select and project
+            //4. Select and projection
             var pagedResult = new PagedResult<ProductViewModel>()
             {
                 TotalRecord = totalRow,
