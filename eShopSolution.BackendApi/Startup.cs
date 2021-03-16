@@ -54,6 +54,34 @@ namespace eShopSolution.BackendApi
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Swagger eShop Solution", Version = "v1" });
                 // có thể truy cập vào install swagger bekenty để tìm đc cách cấu hình cái này 
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme // phần này là phần định nghĩa nó mô tả rằng mỗi khi dùng swagger nó sẽ truyền vào 2 head gọi là Bearer
+                {
+                    Description = @"JWT Authorization header using the Bearer scheme. \r\n\r\n
+                      Enter 'Bearer' [space] and then your token in the text input below.
+                      \r\n\r\nExample: 'Bearer 12345abcdef'",
+                    Name = "Authorization", // tên là Authorization
+                    In = ParameterLocation.Header, // truyền vào header
+                    Type = SecuritySchemeType.ApiKey, // kiểu là ApiKey
+                    Scheme = "Bearer"
+                });
+                // và ep 1 cai AddSecurityRequirement khi mà gọi swagger yêu cầu nó truyền vào 1 cái header tên là Bearer
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement()
+                  {
+                    {
+                      new OpenApiSecurityScheme
+                      {
+                        Reference = new OpenApiReference
+                          {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                          },
+                          Scheme = "oauth2",
+                          Name = "Bearer",
+                          In = ParameterLocation.Header,
+                        },
+                        new List<string>()
+                      }
+                    });
             });
         }
 

@@ -21,7 +21,7 @@ namespace eShopSolution.Application.Catalog.Products
 
         Task<bool> UpdatePrice(int productId, decimal newPrice);
 
-        Task<bool> UpdateStock(int ProductId, int addQuantity);
+        Task<bool> UpdateStock(int ProductId, int addedQuantity);
 
         Task AddViewCount(int productId);
 

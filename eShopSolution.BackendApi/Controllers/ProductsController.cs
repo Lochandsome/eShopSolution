@@ -1,6 +1,7 @@
 ﻿using eShopSolution.Application.Catalog.Products;
 using eShopSolution.ViewModels.Catalog.ProductImages;
 using eShopSolution.ViewModels.Catalog.Products;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
@@ -8,6 +9,7 @@ namespace eShopSolution.BackendApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class ProductsController : ControllerBase
     {
         private readonly IPublicProductService _publicProductService;
@@ -48,11 +50,11 @@ namespace eShopSolution.BackendApi.Controllers
             }
             var productId = await _manageProductService.Create(request);
             if (productId == 0)
-                return BadRequest(); // báo lỗi 400
+                return BadRequest();
 
             var product = await _manageProductService.GetById(productId, request.LanguageId);
-             
-            return CreatedAtAction(nameof(GetById),new {ID = productId }, productId);
+
+            return CreatedAtAction(nameof(GetById), new { id = productId }, product);
         }
 
         [HttpPut]
@@ -62,8 +64,8 @@ namespace eShopSolution.BackendApi.Controllers
             {
                 return BadRequest(ModelState);
             }
-            var affectResult = await _manageProductService.Update(request);
-            if (affectResult == 0)
+            var affectedResult = await _manageProductService.Update(request);
+            if (affectedResult == 0)
                 return BadRequest(); // báo lỗi 400
             return Ok();
         }
@@ -80,9 +82,9 @@ namespace eShopSolution.BackendApi.Controllers
         [HttpPatch("{productId}/{newPrice}")]
         public async Task<IActionResult> UpdatePrice(int productId,  decimal newPrice)
         {
-            var isSucessful = await _manageProductService.UpdatePrice(productId, newPrice);
-            if (isSucessful)
-                return Ok(); 
+            var isSuccessful = await _manageProductService.UpdatePrice(productId, newPrice);
+            if (isSuccessful)
+                return Ok();
 
             return BadRequest();
         }
@@ -97,11 +99,11 @@ namespace eShopSolution.BackendApi.Controllers
             }
             var imageId = await _manageProductService.AddImage(productId, request);
             if (imageId == 0)
-                return BadRequest(); // báo lỗi 400
+                return BadRequest();
 
             var image = await _manageProductService.GetImageById(imageId);
 
-            return CreatedAtAction(nameof(GetImageById), new { ID = imageId }, image);
+            return CreatedAtAction(nameof(GetImageById), new { id = imageId }, image);
         }
 
         [HttpPut("{productId}/images/{imageId}")]
@@ -113,7 +115,7 @@ namespace eShopSolution.BackendApi.Controllers
             }
             var result = await _manageProductService.UpdateImage(imageId, request);
             if (result == 0)
-                return BadRequest(); // báo lỗi 400
+                return BadRequest();
 
             return Ok();
         }
@@ -127,7 +129,7 @@ namespace eShopSolution.BackendApi.Controllers
             }
             var result = await _manageProductService.RemoveImage(imageId);
             if (result == 0)
-                return BadRequest(); // báo lỗi 400
+                return BadRequest();
 
             return Ok();
         }
@@ -137,7 +139,7 @@ namespace eShopSolution.BackendApi.Controllers
         {
             var image = await _manageProductService.GetImageById(imageId);
             if (image == null)
-                return BadRequest("Cannot Find Product");
+                return BadRequest("Cannot find product");
             return Ok(image);
         }
     }
