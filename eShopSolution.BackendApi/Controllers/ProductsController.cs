@@ -9,7 +9,7 @@ namespace eShopSolution.BackendApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize] // có thể cái này
     public class ProductsController : ControllerBase
     {
         private readonly IPublicProductService _publicProductService;
