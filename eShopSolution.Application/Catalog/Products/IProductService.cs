@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace eShopSolution.Application.Catalog.Products
 {
-    public interface IManageProductService
+    public interface IProductService
     {
         // nếu dùng task<int> thì có thể tận dụng xử lí nhiều reques cùng lúc
         // phần này chỉ có thêm sửa xóa thôi
@@ -37,5 +37,8 @@ namespace eShopSolution.Application.Catalog.Products
         Task<ProductImageViewModel> GetImageById(int imageId);
 
         Task<List<ProductImageViewModel>> GetListImages(int productId);
+
+        // phần này sẽ chỉ chứa phương thức cho phần bên ngoài khách hàng đọc
+        Task<PagedResult<ProductViewModel>> GetAllByCategoryId(string languageId, GetPublicProductPagingRequest request);
     }
 }
