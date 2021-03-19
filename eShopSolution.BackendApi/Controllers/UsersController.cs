@@ -39,7 +39,7 @@ namespace eShopSolution.BackendApi.Controllers
 
 
         [HttpPost]
-        [AllowAnonymous]
+        [AllowAnonymous] // dùng cái này là vì chúng ta chỉ dùng chung cho 1 phương thức thôi
         public async Task<IActionResult> Register([FromBody]RegisterRequest request)
         {
             if (!ModelState.IsValid)

@@ -16,6 +16,7 @@ namespace eShopSolution.AdminApp.Services
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IConfiguration _configuration;
+
         public UserApiClient(IHttpClientFactory httpClientFactory, IConfiguration configuration)
         {
             _httpClientFactory = httpClientFactory;
@@ -47,9 +48,16 @@ namespace eShopSolution.AdminApp.Services
             return users;
         }
 
-        public Task<bool> RegisterUser(RegisterRequest registerRequest)
+        public async Task<bool> RegisterUser(RegisterRequest registerRequest)
         {
-            throw new NotImplementedException();
+            var client = _httpClientFactory.CreateClient();
+            client.BaseAddress = new Uri(_configuration["BaseAddress"]);
+
+            var json = JsonConvert.SerializeObject(registerRequest);
+            var httpContent = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await client.PostAsync($"/api/users", httpContent);
+            return response.IsSuccessStatusCode;
         }
     }
 }
