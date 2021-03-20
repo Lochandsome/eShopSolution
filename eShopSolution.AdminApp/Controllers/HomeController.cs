@@ -10,8 +10,8 @@ using System.Threading.Tasks;
 
 namespace eShopSolution.AdminApp.Controllers
 {
-    [Authorize] // tức là kd dc phép vào khi chưa đăng nhập
-    public class HomeController : Controller
+    
+    public class HomeController : BaseController // là basecontroller sẽ check luôn cho chúng ta cái section nếu k thì vào lại login
     {
         private readonly ILogger<HomeController> _logger;
 
