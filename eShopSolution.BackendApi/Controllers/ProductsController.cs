@@ -11,35 +11,33 @@ namespace eShopSolution.BackendApi.Controllers
     [ApiController]
     [Authorize] // có thể cái này
     public class ProductsController : ControllerBase
-    {        
+    {
         private readonly IProductService _productService;
 
-        public ProductsController(IProductService productService)
+        public ProductsController(
+            IProductService productService)
         {
             _productService = productService;
         }
 
-        // tại là nếu để 2 cái đứa httpget thì nó k đc nên phải truyền thêm tham sô vô thì nó sẽ như này, nó sẽ k bị trùng
-        //http://localhost:port/product?pageIndex=1&pageSize=10&CategoryId=
-        [HttpGet("{languageId}")]
-        public async Task<IActionResult> GetAllPaging(string languageId, [FromQuery]GetPublicProductPagingRequest request)
-        {//FROMQUERY là tất cá các tham số Get...PagingRequest là nó lấy từ query ra
-            var products = await _productService.GetAllByCategoryId(languageId, request);
+        [HttpGet("paging")]
+        public async Task<IActionResult> GetAllPaging([FromQuery] GetManageProductPagingRequest request)
+        {
+            var products = await _productService.GetAllPaging(request);
             return Ok(products);
         }
 
-        //http://localhost:port/product/1
         [HttpGet("{productId}/{languageId}")]
         public async Task<IActionResult> GetById(int productId, string languageId)
         {
             var product = await _productService.GetById(productId, languageId);
             if (product == null)
-                return BadRequest("Cannot Find Product");
+                return BadRequest("Cannot find product");
             return Ok(product);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromForm]ProductCreateRequest request)
+        public async Task<IActionResult> Create([FromForm] ProductCreateRequest request)
         {
             if (!ModelState.IsValid)
             {
@@ -55,7 +53,7 @@ namespace eShopSolution.BackendApi.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> Update([FromForm]ProductUpdateRequest request)
+        public async Task<IActionResult> Update([FromForm] ProductUpdateRequest request)
         {
             if (!ModelState.IsValid)
             {
@@ -63,21 +61,21 @@ namespace eShopSolution.BackendApi.Controllers
             }
             var affectedResult = await _productService.Update(request);
             if (affectedResult == 0)
-                return BadRequest(); // báo lỗi 400
+                return BadRequest();
             return Ok();
         }
 
         [HttpDelete("{productId}")]
         public async Task<IActionResult> Delete(int productId)
         {
-            var affectResult = await _productService.Delete(productId);
-            if (affectResult == 0)
-                return BadRequest(); // báo lỗi 400
+            var affectedResult = await _productService.Delete(productId);
+            if (affectedResult == 0)
+                return BadRequest();
             return Ok();
         }
 
         [HttpPatch("{productId}/{newPrice}")]
-        public async Task<IActionResult> UpdatePrice(int productId,  decimal newPrice)
+        public async Task<IActionResult> UpdatePrice(int productId, decimal newPrice)
         {
             var isSuccessful = await _productService.UpdatePrice(productId, newPrice);
             if (isSuccessful)
@@ -86,9 +84,9 @@ namespace eShopSolution.BackendApi.Controllers
             return BadRequest();
         }
 
-        //Image
+        //Images
         [HttpPost("{productId}/images")]
-        public async Task<IActionResult> CreateImage(int productId, [FromForm]ProductImageCreateRequest request)
+        public async Task<IActionResult> CreateImage(int productId, [FromForm] ProductImageCreateRequest request)
         {
             if (!ModelState.IsValid)
             {
@@ -104,7 +102,7 @@ namespace eShopSolution.BackendApi.Controllers
         }
 
         [HttpPut("{productId}/images/{imageId}")]
-        public async Task<IActionResult> UpdateImage(int imageId, [FromForm]ProductImageUpdateRequest request)
+        public async Task<IActionResult> UpdateImage(int imageId, [FromForm] ProductImageUpdateRequest request)
         {
             if (!ModelState.IsValid)
             {
@@ -131,8 +129,8 @@ namespace eShopSolution.BackendApi.Controllers
             return Ok();
         }
 
-        [HttpGet("{productId}/image/{imageId}")]
-        public async Task<IActionResult> GetImageById( int imageId)
+        [HttpGet("{productId}/images/{imageId}")]
+        public async Task<IActionResult> GetImageById(int productId, int imageId)
         {
             var image = await _productService.GetImageById(imageId);
             if (image == null)
