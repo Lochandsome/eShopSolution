@@ -19,9 +19,9 @@ namespace eShopSolution.Application.Catalog.Products
 {
     public class ProductService : IProductService
     {
-        private readonly EShopDbContext _context; // chỉ đọc thôi
+        private readonly EShopDbContext _context;
         private readonly IStorageService _storageService;
-        //sau khi add được dbcontext bên data thì phải khai báo thêm 1 cái biến nội bộ để đón đc nó
+
         public ProductService(EShopDbContext context, IStorageService storageService)
         {
             _context = context;
@@ -47,13 +47,12 @@ namespace eShopSolution.Application.Catalog.Products
             _context.ProductImages.Add(productImage);
             await _context.SaveChangesAsync();
             return productImage.Id;
-
         }
 
-        public async Task AddViewCount(int productId)
+        public async Task AddViewcount(int productId)
         {
             var product = await _context.Products.FindAsync(productId);
-            product.ViewCount += 1; //MẶC ĐỊNH CỦA NÓ LÀ 0
+            product.ViewCount += 1;
             await _context.SaveChangesAsync();
         }
 
@@ -68,7 +67,6 @@ namespace eShopSolution.Application.Catalog.Products
                 DateCreated = DateTime.Now,
                 ProductTranslations = new List<ProductTranslation>()
                 {
-                    //new 1 producttranslation là thêm theo cái dạng cha con bởi cì cái id của product mà translation thì chưa có
                     new ProductTranslation()
                     {
                         Name =  request.Name,
@@ -81,7 +79,7 @@ namespace eShopSolution.Application.Catalog.Products
                     }
                 }
             };
-            //save image
+            //Save image
             if (request.ThumbnailImage != null)
             {
                 product.ProductImages = new List<ProductImage>()
@@ -98,8 +96,7 @@ namespace eShopSolution.Application.Catalog.Products
                 };
             }
             _context.Products.Add(product);
-            //sau khi tới bc này thì qua IManageProductServide đổi int thành task<int>
-            await _context.SaveChangesAsync();// thay vì nó phải chời thì nó sẽ nhả task ra để phục vụ request khác, và giảm cái thời gian mà nó phải chờ
+            await _context.SaveChangesAsync();
             return product.Id;
         }
 
@@ -124,18 +121,19 @@ namespace eShopSolution.Application.Catalog.Products
             //1. Select join
             var query = from p in _context.Products
                         join pt in _context.ProductTranslations on p.Id equals pt.ProductId
-                        join pic in _context.ProductInCategories on p.Id equals pic.ProductId
-                        join c in _context.Categories on pic.CategoryId equals c.Id
+                        //join pic in _context.ProductInCategories on p.Id equals pic.ProductId
+                        //join c in _context.Categories on pic.CategoryId equals c.Id
                         where pt.LanguageId == request.LanguageId
-                        select new { p, pt, pic };
+                        select new { p, pt };
             //2. filter
             if (!string.IsNullOrEmpty(request.Keyword))
                 query = query.Where(x => x.pt.Name.Contains(request.Keyword));
 
-            if (request.CategoryIds != null && request.CategoryIds.Count > 0)
-            {
-                query = query.Where(p => request.CategoryIds.Contains(p.pic.CategoryId));
-            }
+            //if (request.CategoryIds != null && request.CategoryIds.Count > 0)
+            //{
+            //    query = query.Where(p => request.CategoryIds.Contains(p.pic.CategoryId));
+            //}
+
             //3. Paging
             int totalRow = await query.CountAsync();
 
@@ -172,7 +170,8 @@ namespace eShopSolution.Application.Catalog.Products
         public async Task<ProductVm> GetById(int productId, string languageId)
         {
             var product = await _context.Products.FindAsync(productId);
-            var productTranslation = await _context.ProductTranslations.FirstOrDefaultAsync(x => x.ProductId == productId && x.LanguageId == languageId);
+            var productTranslation = await _context.ProductTranslations.FirstOrDefaultAsync(x => x.ProductId == productId
+            && x.LanguageId == languageId);
 
             var productViewModel = new ProductVm()
             {
@@ -241,7 +240,8 @@ namespace eShopSolution.Application.Catalog.Products
         public async Task<int> Update(ProductUpdateRequest request)
         {
             var product = await _context.Products.FindAsync(request.Id);
-            var productTranslations = await _context.ProductTranslations.FirstOrDefaultAsync(x => x.ProductId == request.Id && x.LanguageId == request.LanguageId);
+            var productTranslations = await _context.ProductTranslations.FirstOrDefaultAsync(x => x.ProductId == request.Id
+            && x.LanguageId == request.LanguageId);
 
             if (product == null || productTranslations == null) throw new EShopException($"Cannot find a product with id: {request.Id}");
 
@@ -253,13 +253,13 @@ namespace eShopSolution.Application.Catalog.Products
             productTranslations.Details = request.Details;
 
             //Save image
-            if (request.ThumnailImage != null)
+            if (request.ThumbnailImage != null)
             {
                 var thumbnailImage = await _context.ProductImages.FirstOrDefaultAsync(i => i.IsDefault == true && i.ProductId == request.Id);
                 if (thumbnailImage != null)
                 {
-                    thumbnailImage.FileSize = request.ThumnailImage.Length;
-                    thumbnailImage.ImagePath = await this.SaveFile(request.ThumnailImage);
+                    thumbnailImage.FileSize = request.ThumbnailImage.Length;
+                    thumbnailImage.ImagePath = await this.SaveFile(request.ThumbnailImage);
                     _context.ProductImages.Update(thumbnailImage);
                 }
             }
@@ -288,7 +288,6 @@ namespace eShopSolution.Application.Catalog.Products
             if (product == null) throw new EShopException($"Cannot find a product with id: {productId}");
             product.Price = newPrice;
             return await _context.SaveChangesAsync() > 0;
-
         }
 
         public async Task<bool> UpdateStock(int productId, int addedQuantity)
@@ -306,6 +305,7 @@ namespace eShopSolution.Application.Catalog.Products
             await _storageService.SaveFileAsync(file.OpenReadStream(), fileName);
             return fileName;
         }
+
         public async Task<PagedResult<ProductVm>> GetAllByCategoryId(string languageId, GetPublicProductPagingRequest request)
         {
             //1. Select join
@@ -315,9 +315,8 @@ namespace eShopSolution.Application.Catalog.Products
                         join c in _context.Categories on pic.CategoryId equals c.Id
                         where pt.LanguageId == languageId
                         select new { p, pt, pic };
-            //2 filter
-
-            if (request.CategoryId.HasValue && request.CategoryId.Value > 0) //nếu trong CategoryId int? null thì có thể nhận giá trị null nữa
+            //2. filter
+            if (request.CategoryId.HasValue && request.CategoryId.Value > 0)
             {
                 query = query.Where(p => p.pic.CategoryId == request.CategoryId);
             }
@@ -353,6 +352,5 @@ namespace eShopSolution.Application.Catalog.Products
             };
             return pagedResult;
         }
-
     }
 }

@@ -39,50 +39,45 @@ namespace eShopSolution.BackendApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            
-
             services.AddDbContext<EShopDbContext>(options =>
-            options.UseSqlServer(Configuration.GetConnectionString(SystemConstants.MainConnectionString)));
+                options.UseSqlServer(Configuration.GetConnectionString(SystemConstants.MainConnectionString)));
 
-            services.AddIdentity<AppUser, AppRole>().AddEntityFrameworkStores<EShopDbContext>().AddDefaultTokenProviders();
+            services.AddIdentity<AppUser, AppRole>()
+                .AddEntityFrameworkStores<EShopDbContext>()
+                .AddDefaultTokenProviders();
 
             //Declare DI
             services.AddTransient<IStorageService, FileStorageService>();
-           
+
             services.AddTransient<IProductService, ProductService>();
-            //Login and register
             services.AddTransient<UserManager<AppUser>, UserManager<AppUser>>();
             services.AddTransient<SignInManager<AppUser>, SignInManager<AppUser>>();
             services.AddTransient<RoleManager<AppRole>, RoleManager<AppRole>>();
-            services.AddTransient<IUserService, UserService>();
-            services.AddTransient<IRoleService, RoleService>();
             services.AddTransient<ILanguageService, LanguageService>();
+            services.AddTransient<IRoleService, RoleService>();
+            services.AddTransient<IUserService, UserService>();
 
             //services.AddTransient<IValidator<LoginRequest>, LoginRequestValidator>();
             //services.AddTransient<IValidator<RegisterRequest>, RegisterRequestValidator>();
 
-            // có 2 cách là dùng FluentValidator 2 cái trên 2 là dùng cái AddFluendVlidator cả đám luôn nên k cần dùng 2 cái trên nữa
-
-
-            // câu lênh AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<LoginRequestValidator>())
-            // là đk tất cả các thằng nào mà nó cùng cái lalidator vs cùng  sembly.. jj ấy
-            services.AddControllers().AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<LoginRequestValidator>());
+            services.AddControllers()
+                .AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<LoginRequestValidator>());
 
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Swagger eShop Solution", Version = "v1" });
-                // có thể truy cập vào install swagger bekenty để tìm đc cách cấu hình cái này 
-                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme // phần này là phần định nghĩa nó mô tả rằng mỗi khi dùng swagger nó sẽ truyền vào 2 head gọi là Bearer
+
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     Description = @"JWT Authorization header using the Bearer scheme. \r\n\r\n
                       Enter 'Bearer' [space] and then your token in the text input below.
                       \r\n\r\nExample: 'Bearer 12345abcdef'",
-                    Name = "Authorization", // tên là Authorization
-                    In = ParameterLocation.Header, // truyền vào header
-                    Type = SecuritySchemeType.ApiKey, // kiểu là ApiKey
+                    Name = "Authorization",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.ApiKey,
                     Scheme = "Bearer"
                 });
-                // và ep 1 cai AddSecurityRequirement khi mà gọi swagger yêu cầu nó truyền vào 1 cái header tên là Bearer
+
                 c.AddSecurityRequirement(new OpenApiSecurityRequirement()
                   {
                     {

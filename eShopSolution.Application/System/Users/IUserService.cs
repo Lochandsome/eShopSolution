@@ -14,7 +14,7 @@ namespace eShopSolution.Application.System.Users
         Task<ApiResult<bool>> Register(RegisterRequest request);
 
         Task<ApiResult<bool>> Update(Guid id, UserUpdateRequest request);
-        // cái dưới nghĩa là chúng ta lấy đc 1 danh sách user và trả về 1 model phân trang
+
         Task<ApiResult<PagedResult<UserVm>>> GetUsersPaging(GetUserPagingRequest request);
 
         Task<ApiResult<UserVm>> GetById(Guid id);
